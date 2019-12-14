@@ -46,7 +46,7 @@ import org.apache.kylin.cube.model.CubeJoinedFlatTableEnrich;
 import org.apache.kylin.engine.EngineFactory;
 import org.apache.kylin.engine.mr.KylinMapper;
 import org.apache.kylin.engine.mr.common.AbstractHadoopJob;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.apache.kylin.engine.mr.common.CuboidSchedulerUtil;
 import org.apache.kylin.engine.mr.common.DictionaryGetterUtil;
 import org.apache.kylin.metadata.model.IJoinedFlatTableDesc;

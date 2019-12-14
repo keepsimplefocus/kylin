@@ -43,7 +43,7 @@ import org.apache.kylin.dict.DictionaryInfo;
 import org.apache.kylin.dict.IDictionaryBuilder;
 import org.apache.kylin.engine.mr.KylinReducer;
 import org.apache.kylin.engine.mr.common.AbstractHadoopJob;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.apache.kylin.metadata.model.TblColRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

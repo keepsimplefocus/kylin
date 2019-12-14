@@ -121,30 +121,32 @@ public class KylinConfig extends KylinConfigBase {
     }
 
     public static KylinConfig getInstanceFromEnv() {
-        synchronized (KylinConfig.class) {
-            KylinConfig config = THREAD_ENV_INSTANCE.get();
-            if (config != null) {
-                return config;
-            }
+        return new KylinConfig();
 
-            if (SYS_ENV_INSTANCE == null) {
-                try {
-                    //build default ordered properties will only be called once.
-                    //This logic no need called by CoProcessor due to it didn't call getInstanceFromEnv.
-                    buildDefaultOrderedProperties();
-
-                    config = new KylinConfig();
-                    config.reloadKylinConfig(buildSiteProperties());
-
-                    logger.info("Initialized a new KylinConfig from getInstanceFromEnv : "
-                            + System.identityHashCode(config));
-                    SYS_ENV_INSTANCE = config;
-                } catch (IllegalArgumentException e) {
-                    throw new IllegalStateException("Failed to find KylinConfig ", e);
-                }
-            }
-            return SYS_ENV_INSTANCE;
-        }
+//        synchronized (KylinConfig.class) {
+//            KylinConfig config = THREAD_ENV_INSTANCE.get();
+//            if (config != null) {
+//                return config;
+//            }
+//
+//            if (SYS_ENV_INSTANCE == null) {
+//                try {
+//                    //build default ordered properties will only be called once.
+//                    //This logic no need called by CoProcessor due to it didn't call getInstanceFromEnv.
+//                    buildDefaultOrderedProperties();
+//
+//                    config = new KylinConfig();
+//                    config.reloadKylinConfig(buildSiteProperties());
+//
+//                    logger.info("Initialized a new KylinConfig from getInstanceFromEnv : "
+//                            + System.identityHashCode(config));
+//                    SYS_ENV_INSTANCE = config;
+//                } catch (IllegalArgumentException e) {
+//                    throw new IllegalStateException("Failed to find KylinConfig ", e);
+//                }
+//            }
+//            return SYS_ENV_INSTANCE;
+//        }
     }
 
     // Only used in test cases!!!

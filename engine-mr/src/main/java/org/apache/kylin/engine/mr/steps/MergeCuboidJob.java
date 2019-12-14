@@ -28,7 +28,7 @@ import org.apache.kylin.cube.CubeManager;
 import org.apache.kylin.cube.CubeSegment;
 import org.apache.kylin.engine.mr.IMROutput2;
 import org.apache.kylin.engine.mr.MRUtil;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.apache.kylin.metadata.model.Segments;
 
 public class MergeCuboidJob extends CuboidJob {

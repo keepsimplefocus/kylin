@@ -24,7 +24,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
-public class ColumnarSplitDataInputFormat extends ColumnarSplitInputFormat {
+public class ColumnarSplitDataInputFormat<K, V> extends ColumnarSplitInputFormat {
 
     @Override
     public RecordReader createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException,

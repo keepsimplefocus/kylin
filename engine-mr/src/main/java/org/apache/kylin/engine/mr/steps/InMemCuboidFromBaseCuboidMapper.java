@@ -33,7 +33,7 @@ import org.apache.kylin.cube.inmemcubing.InputConverterUnit;
 import org.apache.kylin.cube.inmemcubing.InputConverterUnitForBaseCuboid;
 import org.apache.kylin.cube.kv.CubeDimEncMap;
 import org.apache.kylin.engine.mr.ByteArrayWritable;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.apache.kylin.gridtable.GTInfo;
 
 public class InMemCuboidFromBaseCuboidMapper

@@ -41,7 +41,7 @@ import org.apache.kylin.dict.DictionarySerializer;
 import org.apache.kylin.dict.MultipleDictionaryValueEnumerator;
 import org.apache.kylin.engine.mr.KylinReducer;
 import org.apache.kylin.engine.mr.common.AbstractHadoopJob;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.apache.kylin.metadata.datatype.DataType;
 import org.apache.kylin.metadata.model.SegmentStatusEnum;
 import org.apache.kylin.metadata.model.TableDesc;
@@ -71,26 +71,44 @@ public class MergeDictReducer extends KylinReducer<Text, Text, Text, Text> {
         segmentName = context.getConfiguration().get(BatchConstants.CFG_CUBE_SEGMENT_NAME);
         cube = CubeManager.getInstance(config).getCube(cubeName);
         segment = cube.getSegment(segmentName, SegmentStatusEnum.NEW);
-        if (segment == null) {
-            logger.debug("segment {} is null during setup!", segmentName);
-            throw new IllegalArgumentException("Segment is null, job quit!");
-        }
-        colNeedDictMap = Maps.newHashMap();
-        Set<TblColRef> columnsNeedDict = cube.getDescriptor().getAllColumnsNeedDictionaryBuilt();
-        for (TblColRef column : columnsNeedDict) {
-            colNeedDictMap.put(column.getName(), column);
-        }
+        colNeedDictMap = getColNeedDictMap(cubeName, segmentName, cube, segment);
     }
 
     @Override
     protected void doReduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+        Text outValue = reduce(key, values, colNeedDictMap);
+        if (null != outValue) {
+            context.write(key, outValue);
+            logger.debug("output dict info of column {} to path: {}", key.toString(),
+                    context.getConfiguration().get(FileOutputFormat.OUTDIR));
+        }
+    }
+
+    public static Map<String, TblColRef> getColNeedDictMap(String cubeName,
+                                                           String segmentName,
+                                                           CubeInstance cube,
+                                                           CubeSegment segment) {
+        if (segment == null) {
+            logger.debug("segment {} is null during setup!", segmentName);
+            throw new IllegalArgumentException("Segment is null, job quit!");
+        }
+        Map<String, TblColRef> needDictMap = Maps.newHashMap();
+        Set<TblColRef> columnsNeedDict = cube.getDescriptor().getAllColumnsNeedDictionaryBuilt();
+        for (TblColRef column : columnsNeedDict) {
+            needDictMap.put(column.getName(), column);
+        }
+        return needDictMap;
+    }
+
+    public static Text reduce(Text key, Iterable<Text> values, Map<String, TblColRef> colNeedDictMap)
+            throws IOException, InterruptedException {
         String col = key.toString();
         logger.info("merge dictionary for column:{}", col);
         TblColRef tblColRef = colNeedDictMap.get(col);
 
         if (tblColRef == null) {
             logger.warn("column:{} not found in the columns need dictionary map: {}", col, colNeedDictMap.keySet());
-            return;
+            return null;
         }
 
         DataType dataType = tblColRef.getType();
@@ -132,10 +150,7 @@ public class MergeDictReducer extends KylinReducer<Text, Text, Text, Text> {
         DataOutputStream fulDout = new DataOutputStream(fulBuf);
         DictionaryInfoSerializer.FULL_SERIALIZER.serialize(dictionaryInfo, fulDout);
 
-        Text outValue = new Text(fulBuf.toByteArray());
-        context.write(key, outValue);
-        logger.debug("output dict info of column {} to path: {}", col,
-                context.getConfiguration().get(FileOutputFormat.OUTDIR));
+        return new Text(fulBuf.toByteArray());
     }
 
 }

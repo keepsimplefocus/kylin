@@ -81,7 +81,7 @@ public abstract class KylinConfigBase implements Serializable {
     }
 
     public static String getKylinHomeWithoutWarn() {
-        String kylinHome = System.getenv("KYLIN_HOME");
+        String kylinHome = "/Users/zhuweibin/data/apps/apache-kylin-3.0.0-alpha2-bin-hbase1x";
         if (StringUtils.isEmpty(kylinHome)) {
             kylinHome = System.getProperty("KYLIN_HOME");
         }

@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-public abstract class ColumnarSplitInputFormat extends FileInputFormat {
+public abstract class ColumnarSplitInputFormat<K, V> extends FileInputFormat<K, V> {
     private static final Logger logger = LoggerFactory.getLogger(ColumnarSplitInputFormat.class);
 
     @Override

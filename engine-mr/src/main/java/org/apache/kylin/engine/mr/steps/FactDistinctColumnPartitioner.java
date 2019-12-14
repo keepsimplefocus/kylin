@@ -30,7 +30,7 @@ import org.apache.kylin.common.util.BytesUtil;
 import org.apache.kylin.cube.CubeInstance;
 import org.apache.kylin.cube.CubeManager;
 import org.apache.kylin.engine.mr.common.AbstractHadoopJob;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

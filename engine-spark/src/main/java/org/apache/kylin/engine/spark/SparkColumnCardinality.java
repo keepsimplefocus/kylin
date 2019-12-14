@@ -29,7 +29,7 @@ import org.apache.kylin.common.util.AbstractApplication;
 import org.apache.kylin.common.util.Bytes;
 import org.apache.kylin.common.util.HadoopUtil;
 import org.apache.kylin.common.util.OptionsHelper;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.apache.kylin.measure.hllc.HLLCounter;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;

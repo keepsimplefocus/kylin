@@ -204,7 +204,7 @@ public class HadoopUtil {
 
     public static void deleteHDFSMeta(String metaUrl) throws IOException {
         String realHdfsPath = StorageURL.valueOf(metaUrl).getParameter("path");
-        HadoopUtil.getFileSystem(realHdfsPath).delete(new Path(realHdfsPath), true);
+//        HadoopUtil.getFileSystem(realHdfsPath).delete(new Path(realHdfsPath), true);
         logger.info("Delete metadata in HDFS for this job: " + realHdfsPath);
     }
 

@@ -88,6 +88,7 @@
 
     <!-- Scala versions -->
     <scala.version>2.11.0</scala.version>
+    <scala.binary.version>2.11</scala.binary.version>
 
     <reflections.version>0.9.10</reflections.version>
 
@@ -110,7 +111,7 @@
     <commons-pool.version>2.5.0</commons-pool.version>
 
     <!-- Calcite deps, keep compatible with calcite.version -->
-    <jackson.version>2.9.5</jackson.version>
+    <jackson.version>2.6.7</jackson.version>
 
     <!-- Test Dependency versions -->
     <antlr.version>3.4</antlr.version>
@@ -1032,6 +1033,12 @@
         <groupId>org.apache.curator</groupId>
         <artifactId>curator-test</artifactId>
         <version>${curator.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest_${scala.binary.version}</artifactId>
+        <version>3.0.8</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

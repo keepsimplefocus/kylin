@@ -35,7 +35,7 @@ import org.apache.kylin.common.util.MemoryBudgetController;
 import org.apache.kylin.common.util.StringUtil;
 import org.apache.kylin.cube.DimensionRangeInfo;
 import org.apache.kylin.cube.cuboid.CuboidUtil;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.apache.kylin.engine.mr.common.StatisticsDecisionUtil;
 import org.apache.kylin.measure.BufferedMeasureCodec;
 import org.apache.kylin.measure.hllc.HLLCounter;

@@ -24,7 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.kylin.common.util.HadoopUtil;
 import org.apache.kylin.common.util.MemoryBudgetController;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

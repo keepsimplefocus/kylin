@@ -24,7 +24,7 @@ import org.apache.kylin.common.KylinConfig;
 import org.apache.kylin.cube.CubeInstance;
 import org.apache.kylin.cube.model.CubeDesc;
 import org.apache.kylin.cube.model.SnapshotTableDesc;
-import org.apache.kylin.engine.mr.common.BatchConstants;
+import org.apache.kylin.common.streaming.BatchConstants;
 import org.apache.kylin.engine.mr.steps.lookup.LookupExecutableUtil;
 import org.apache.kylin.engine.mr.steps.lookup.LookupSnapshotToMetaStoreStep;
 import org.apache.kylin.engine.mr.steps.lookup.UpdateCubeAfterSnapshotStep;

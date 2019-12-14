@@ -16,7 +16,7 @@
  * limitations under the License.
 */
 
-package org.apache.kylin.engine.mr.common;
+package org.apache.kylin.common.streaming;
 
 public interface BatchConstants {
 
