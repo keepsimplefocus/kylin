@@ -60,7 +60,7 @@
     <eclipse.lifecycle-mapping.version>1.0.1</eclipse.lifecycle-mapping.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <puppycrawl.version>8.6</puppycrawl.version>
+    <puppycrawl.version>8.18</puppycrawl.version>
     <spotbugs.version>3.1.1</spotbugs.version>
 
     <kylin.version>3.0.0</kylin.version>
@@ -92,7 +92,7 @@
     <reflections.version>0.9.10</reflections.version>
 
     <!-- Calcite Version, the kylin fork is: https://github.com/Kyligence/calcite -->
-    <calcite.version>1.16.0-kylin-r2</calcite.version>
+    <calcite.version>1.16.0-kylin-r3</calcite.version>
     <avatica.version>1.12.0</avatica.version>
 
     <!-- Hadoop Common deps, keep compatible with hadoop2.version -->
@@ -1095,7 +1095,7 @@
     <repository>
       <id>kyligence</id>
       <name>Kyligence Repository</name>
-      <url>http://repository.kyligence.io/repository/maven-public/
+      <url>http://repository.kyligence.io:8081/repository/maven-public/
       </url>
       <releases>
         <enabled>true</enabled>

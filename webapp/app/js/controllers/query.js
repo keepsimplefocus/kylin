@@ -56,6 +56,8 @@ KylinApp
             selectedProject: null
         };
 
+        $scope.locationChangeConfirmed = false;
+
         var Query = {
             createNew: function (sql, project) {
                 var query = {
@@ -417,27 +419,28 @@ KylinApp
 
         $scope.$on('$locationChangeStart', function (event, next, current) {
             var isExecuting = false;
+            var nextURL = $location.path();
             angular.forEach($scope.queries, function (query, index) {
                 if (query.status == "executing") {
                     isExecuting = true;
                 }
             });
 
-            if (isExecuting && (next.replace(current, "").indexOf("#") != 0)) {
+            if (!$scope.locationChangeConfirmed && isExecuting && (next.replace(current, "").indexOf("#") != 0)) {
                 event.preventDefault();
                 SweetAlert.swal({
-                    title: '',
-                    text: "You've executing query in current page, are you sure to leave this page?",
-                    type: '',
-                    showCancelButton: true,
-                    confirmButtonColor: '#DD6B55',
-                    confirmButtonText: "Yes",
-                    closeOnConfirm: true
+                  title: '',
+                  text: "You've executing query in current page, are you sure to leave this page?",
+                  type: '',
+                  showCancelButton: true,
+                  confirmButtonColor: '#DD6B55',
+                  confirmButtonText: "Yes",
+                  closeOnConfirm: true
                 }, function(isConfirm) {
                     if(isConfirm){
-                        $location.path($location.url(next).hash());
+                      $scope.locationChangeConfirmed = true;
+                      $location.path(nextURL);
                     }
-
                 });
             }
         });

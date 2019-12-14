@@ -21,6 +21,7 @@ package org.apache.kylin.common;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -500,6 +501,10 @@ public abstract class KylinConfigBase implements Serializable {
         return Long.parseLong(getOptional("kylin.dictionary.max-cache-entry", "3000"));
     }
 
+    public int getCachedDictMaxSize() {
+        return Integer.parseInt(getOptional("kylin.dictionary.max-cache-size", "-1"));
+    }
+
     public boolean isGrowingDictEnabled() {
         return Boolean.parseBoolean(this.getOptional("kylin.dictionary.growing-enabled", FALSE));
     }
@@ -551,6 +556,11 @@ public abstract class KylinConfigBase implements Serializable {
     public boolean isShrunkenDictFromGlobalEnabled() {
         return Boolean.parseBoolean(this.getOptional("kylin.dictionary.shrunken-from-global-enabled", TRUE));
     }
+
+    public int getDictionarySliceEvicationThreshold() {
+        return Integer.parseInt(getOptional("kylin.dictionary.slice.eviction.threshold", "5"));
+    }
+
 
     // ============================================================================
     // mr-hive dict
@@ -840,6 +850,14 @@ public abstract class KylinConfigBase implements Serializable {
         return Integer.parseInt(getOptional("kylin.job.scheduler.poll-interval-second", "30"));
     }
 
+    public boolean isSchedulerSafeMode() {
+        return Boolean.parseBoolean(getOptional("kylin.job.scheduler.safemode", "false"));
+    }
+
+    public List<String> getSafeModeRunnableProjects() {
+        return Arrays.asList(getOptionalStringArray("kylin.job.scheduler.safemode.runnable-projects", new String[0]));
+    }
+
     public Integer getErrorRecordThreshold() {
         return Integer.parseInt(getOptional("kylin.job.error-record-threshold", "0"));
     }
@@ -1030,6 +1048,10 @@ public abstract class KylinConfigBase implements Serializable {
         }
     }
 
+    public String getHiveIntermediateTablePrefix() {
+        return getOptional("kylin.source.hive.intermediate-table-prefix", "kylin_intermediate_");
+    }
+
     // ============================================================================
     // SOURCE.KAFKA
     // ============================================================================
@@ -1112,6 +1134,14 @@ public abstract class KylinConfigBase implements Serializable {
         if ("hbase".equals(url))
             url = "default@hbase";
 
+        return StorageURL.valueOf(url);
+    }
+
+    public StorageURL getSecondaryStorageUrl() {
+        String url = getOptional("kylin.secondary.storage.url", "");
+        if (StringUtils.isEmpty(url)) {
+            return null;
+        }
         return StorageURL.valueOf(url);
     }
 
@@ -1458,6 +1488,11 @@ public abstract class KylinConfigBase implements Serializable {
         return Integer.valueOf(getOptional("kylin.engine.spark.output.max-size", "10485760"));
     }
 
+    public boolean isSparkDimensionDictionaryEnabled() {
+        return Boolean.parseBoolean(getOptional("kylin.engine.spark-dimension-dictionary", "false"));
+    }
+
+
     // ============================================================================
     // ENGINE.LIVY
     // ============================================================================
@@ -1543,7 +1578,7 @@ public abstract class KylinConfigBase implements Serializable {
     // check KYLIN-3358, need deploy coprocessor if enabled
     // finally should be deprecated
     public boolean isDynamicColumnEnabled() {
-        return Boolean.parseBoolean(getOptional("kylin.query.enable-dynamic-column", TRUE));
+        return Boolean.parseBoolean(getOptional("kylin.query.enable-dynamic-column", FALSE));
     }
 
     //check KYLIN-1684, in most cases keep the default value
@@ -2081,7 +2116,7 @@ public abstract class KylinConfigBase implements Serializable {
     }
 
     // ============================================================================
-    // streaming
+    // Realtime streaming
     // ============================================================================
     public String getStreamingStoreClass() {
         return getOptional("kylin.stream.store.class",
@@ -2246,8 +2281,12 @@ public abstract class KylinConfigBase implements Serializable {
     /**
      * whether realtime query should add timezone offset by kylin's web-timezone, please refer to KYLIN-4010 for detail
      */
-    public boolean isStreamingAutoJustTimezone() {
-        return Boolean.parseBoolean(getOptional("kylin.stream.auto.just.by.timezone", "false"));
+    public String getStreamingDerivedTimeTimezone() {
+        return (getOptional("kylin.stream.event.timezone", ""));
+    }
+
+    public boolean isAutoResubmitDiscardJob(){
+        return Boolean.parseBoolean(getOptional("kylin.stream.auto-resubmit-after-discard-enabled", "true"));
     }
 
     // ============================================================================
