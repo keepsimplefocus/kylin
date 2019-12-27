@@ -127,4 +127,3 @@ Please note, Kylin assume in the SAML message there is a "email" attribute repre
 
 ### Enable SSO
 Set "kylin.security.profile=saml" in conf/kylin.properties, then restart Kylin server; After that, type a URL like "/kylin" or "/kylin/cubes" will redirect to SSO for login, and jump back after be authorized. While login with LDAP is still available, you can type "/kylin/login" to use original way. The Rest API (/kylin/api/*) still use LDAP + basic authentication, no impact.
-

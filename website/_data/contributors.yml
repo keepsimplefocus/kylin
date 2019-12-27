@@ -39,7 +39,7 @@
   githubId: julianhyde
   org: Hortonworks
   role: Mentor
-- name: Luke Han (韩卿) (Chair)
+- name: Luke Han (韩卿)
   apacheId: lukehan
   githubId: lukehan
   org: Kyligence Inc.
@@ -65,11 +65,11 @@
   org: MapR
   role: Champion
   avatar: https://www.mapr.com/sites/default/files/otherpageimages/ted-circle-80.png
-- name: Shaofeng Shi (史少锋) 
+- name: Shaofeng Shi (史少锋)
   apacheId: shaofengshi
   githubId: shaofengshi
   org: Kyligence Inc.
-  role: PMC
+  role: PMC Chair
 - name: Xiaodong Duo (朵晓东)
   apacheId: xduo
   githubId: xduo
@@ -184,9 +184,24 @@
   apacheId: nic
   githubId: nichunen
   org: Kyligence Inc.
-  role: committer
+  role: PMC
 - name: Jiatao Tao (陶加涛)
   apacheId: tao
   githubId: aaaaaaron
   org: Kyligence Inc.
+  role: committer
+- name: Chao Long (龙超)
+  apacheId: chao
+  githubId: Wayne1c
+  org: Kyligence Inc.
+  role: committer
+- name: Shaohui Liu (刘绍辉)
+  apacheId: liushaohui
+  githubId: lshmouse
+  org: XiaoMi Group.
+  role: committer
+- name: Temple Zhou (周天鹏)
+  apacheId: ztp
+  githubId: TempleZhou
+  org: DXY.cn
   role: committer

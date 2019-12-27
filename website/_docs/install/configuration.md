@@ -18,6 +18,7 @@ permalink: /docs/install/configuration.html
     - [Deploy Kylin](#deploy-config)
 	- [Allocate More Memory for Kylin](#kylin-jvm-settings)
 	- [Job Engine HA](#job-engine-ha)
+	- [Job Engine Safemode](#job-engine-safemode)
 	- [Read/Write Separation](#rw-deploy)
 	- [RESTful Webservice](#rest-config)
 - [Metastore Configuration](#kylin_metastore)
@@ -36,12 +37,18 @@ permalink: /docs/install/configuration.html
 	- [Dictionary-related](#dict-config)
 	- [Deal with Ultra-High-Cardinality Columns](#uhc-config)
 	- [Spark as Build Engine](#spark-cubing)
+	- [Submit Spark jobs via Livy](#livy-submit-spark-job)
 	- [Spark Dynamic Allocation](#dynamic-allocation)
 	- [Job-related](#job-config)
 	- [Enable Email Notification](#email-notification)
 	- [Enable Cube Planner](#cube-planner)
     - [HBase Storage](#hbase-config)
+    - [Secondary Hbase Storage](#secondary-hbase)
+    - [Job Output](#job-output)
     - [Enable Compression](#compress-config)
+    - [Real-time OLAP](#realtime-olap)
+- [Storage Clean up Configuration](#storage-clean-up-configuration)
+    - [Storage-clean-up-related](#storage-clean-up-config)
 - [Query Configuration](#kylin-query)
     - [Query-related](#query-config)
     - [Fuzzy Query](#fuzzy)
@@ -180,6 +187,13 @@ Export KYLIN_JVM_SETTINGS="-Xms1024M -Xmx4096M -Xss1024K -XX`MaxPermSize=512M -v
 
 > Note: For more information, please refer to the **Enable Job Engine HA** section in [Deploy in Cluster Mode](/docs/install/kylin_cluster.html) 
 
+
+### Job Engine Safemode {#job-engine-safemode}
+
+Safemode can be only used in default schedule.
+
+- `kylin.job.scheduler.safemode=TRUE`: to enable job scheduler safemode. In safemode, Newly submitted job will not be executed
+- `kylin.job.scheduler.safemode.runable-projects=project1,project2`: provide list of projects as exceptional case in safemode.
 
 
 ### Read/Write Separation   {#rw-deploy}
@@ -337,6 +351,7 @@ Both Kylin and HBase use compression when writing to disk, so Kylin will multipl
 - `kylin.source.hive.database-for-flat-table`: specifies the name of the Hive database that stores the Hive intermediate table. The default is *default*. Make sure that the user who started the Kylin instance has permission to operate the database.
 - `kylin.source.hive.flat-table-storage-format`: specifies the storage format of the Hive intermediate table. The default value is *SEQUENCEFILE*
 - `kylin.source.hive.flat-table-field-delimiter`: specifies the delimiter of the Hive intermediate table. The default value is *\u001F*
+- `kylin.source.hive.intermediate-table-prefix`: specifies the table name prefix of the Hive intermediate table. The default value is *kylin\_intermediate\_*
 - `kylin.source.hive.redistribute-flat-table`: whether to redistribute the Hive flat table. The default value is *TRUE*
 - `kylin.source.hive.redistribute-column-count`: number of redistributed columns. The default value is *3*
 - `kylin.source.hive.table-dir-create-first`: the default value is *FALSE*
@@ -350,6 +365,7 @@ Both Kylin and HBase use compression when writing to disk, so Kylin will multipl
 - `kylin.engine.mr.max-cuboid-stats-calculator-number`: specifies the number of threads used to calculate Cube statistics. The default value is 1
 - `kylin.engine.mr.build-dict-in-reducer`: whether to build the dictionary in the Reduce phase of the build job *Extract Fact Table Distinct Columns*. The default value is `TRUE`
 - `kylin.engine.mr.yarn-check-interval-seconds`: How often the build engine is checked for the status of the Hadoop job. The default value is 10(s)
+- `kylin.engine.mr.use-local-classpath`: whether to use local mapreduce application classpath. The default value is TRUE
 
 
 
@@ -363,7 +379,7 @@ Both Kylin and HBase use compression when writing to disk, so Kylin will multipl
 - `kylin.dictionary.append-max-versions`: The default value is 3
 - `kylin.dictionary.append-version-ttl`: The default value is 259200000
 - `kylin.dictionary.resuable`: whether to reuse the dictionary. The default value is FALSE
-- `kylin.dictionary.shrunken-from-global-enabled`: whether to reduce the size of global dictionary. The default value is *FALSE*
+- `kylin.dictionary.shrunken-from-global-enabled`: whether to reduce the size of global dictionary. The default value is *TRUE*
 
 
 
@@ -400,6 +416,17 @@ Both Kylin and HBase use compression when writing to disk, so Kylin will multipl
 
 
 
+### Submit Spark jobs via Livy {#livy-submit-spark-job}
+
+- `kylin.engine.livy-conf.livy-enabled`: whether to enable Livy as submit Spark job service. The default value is *FALSE*
+- `kylin.engine.livy-conf.livy-url`: specifies the URL of Livy. Such as *http://127.0.0.1:8998*
+- `kylin.engine.livy-conf.livy-key.*`: specifies the name-key configuration of Livy. Such as *kylin.engine.livy-conf.livy-key.name=kylin-livy-1*
+- `kylin.engine.livy-conf.livy-arr.*`: specifies the array type configuration of Livy. Separated by commas. Such as *kylin.engine.livy-conf.livy-arr.jars=hdfs://your_self_path/hbase-common-1.4.8.jar,hdfs://your_self_path/hbase-server-1.4.8.jar,hdfs://your_self_path/hbase-client-1.4.8.jar*
+- `kylin.engine.livy-conf.livy-map.*`: specifies the Spark configuration properties. Such as *kylin.engine.livy-conf.livy-map.spark.executor.instances=10*
+
+> Note: For more information, please refer to [Apache Livy Rest API](http://livy.incubator.apache.org/docs/latest/rest-api.html).
+
+
 ### Spark Dynamic Allocation {#dynamic-allocation}
 
 - `kylin.engine.spark-conf.spark.shuffle.service.enabled`: whether to enable shuffle service
@@ -419,6 +446,7 @@ Both Kylin and HBase use compression when writing to disk, so Kylin will multipl
 - `kylin.job.allow-empty-segment`: whether tolerant data source is empty. The default value is *TRUE*
 - `kylin.job.max-concurrent-jobs`: specifies maximum build concurrency, default is 10
 - `kylin.job.retry`: specifies retry times after the job is failed. The default value is 0
+- `kylin.job.retry-interval`: specifies retry interval in milliseconds. The default value is 30000
 - `kylin.job.scheduler.priority-considered`: whether to consider the job priority. The default value is FALSE
 - `kylin.job.scheduler.priority-bar-fetch-from-queue`: specifies the time interval for getting jobs from the priority queue. The default value is 20(s)
 - `kylin.job.scheduler.poll-interval-second`: The time interval for getting the job from the queue. The default value is 30(s)
@@ -488,6 +516,25 @@ Both Kylin and HBase use compression when writing to disk, so Kylin will multipl
 
 
 
+### Secondary Hbase Storage {#secondary-hbase}
+
+Kylin support secondary hbase storage and made the kylin cluster can query cube data from the old hbase cluster during the cluster migration.
+
+- `kylin.secondary.storage.url`: specifies the secondary hbase cluster and metadata path. Such as *kylin.secondary.storage.url=hostname:kylin_metadata@hbase,hbase.zookeeper.quorum=hostname:11000,zookeeper.znode.parent=/hbase/*. if there are other parameters,  they can be added in the form of <key> = <value>.
+
+> Note: For more information, please refer to [KYLIN-4175](https://issues.apache.org/jira/browse/KYLIN-4175).
+
+
+
+### Job Output {#job-output}
+
+In order to avoid job output content is too large, user could set the max length of output.
+
+- `kylin.job.execute-output.max-size`: The max length of job output. The default value is 10484760.
+- `kylin.engine.spark.output.max-size`: The max length of spark job output. The default value is 10484760.
+
+
+
 ### Enable Compression {#compress-config}
 
 Kylin does not enable Enable Compression by default. Unsupported compression algorithms can hinder Kylin's build jobs, but a suitable compression algorithm can reduce storage overhead and network overhead and improve overall system operation efficiency.
@@ -535,6 +582,60 @@ This compression is configured via `kylin_job_conf.xml` and `kylin_job_conf_inme
 <description></description>
 </property>
 ```
+
+
+
+### Real-time OLAP    {#realtime-olap}
+#### Global level config
+
+- `kylin.stream.job.dfs.block.size`: specifies the HDFS block size of the streaming Base Cuboid job using. The default value is *16M*.
+- `kylin.stream.index.path`: specifies the local path to store segment cache files(including fragment and checkpoint files). The default value is *stream_index*.
+- `kylin.stream.node`: specifies the node of coordinator/receiver. Value should be `hostname:port` or `port`. If set to `port`, Kylin will complete hostname automatically. When Kylin process started, it will register it into metadata. The default value is *null*.
+- `kylin.stream.metadata.store.type`: specifies the position of metadata store. The default value is *zk*. This entry is trivial because it has only one option.
+- `kylin.stream.receiver.use-threads-per-query`: specifies the threads number that each query use. The default value is *8*.
+
+#### Cube level config
+
+- `kylin.stream.index.maxrows`: specifies the maximum number of the aggregated event keep in JVM heap. The default value is *50000*. Try to advance it if you have enough heap size.
+- `kylin.stream.cube-num-of-consumer-tasks`: specifies the number of replica sets that share the whole topic partition. It affects how many partitions will be assigned to different replica sets. The default value is *3*.
+- `kylin.stream.segment.retention.policy`: specifies the strategy to process local segment cache when segment become *IMMUTABLE*. Optional values include `purge` and `fullBuild`. `purge` means when the segment become *IMMUTABLE*, it will be deleted. `fullBuild` means when the segment become *IMMUTABLE*, it will be uploaded to HDFS. The default value is *fullBuild*.
+- `kylin.stream.build.additional.cuboids`: whether to build additional Cuboids. The additional Cuboids mean the aggregation of Mandatory Dimensions that chosen in *Cube Advanced Setting* page. The default value is *false*. Only build Base Cuboid by default. Try to enable it if you care the QPS and most query pattern can be foresaw.
+- `kylin.stream.cube.window`: specifies the length of duration of each segment, value in seconds. The default value is *3600*. Please check detail at[deep-dive-real-time-olap](http://kylin.apache.org/blog/2019/07/01/deep-dive-real-time-olap/).
+- `kylin.stream.cube.duration`: specifies the wait time that a segment's status changes from active to IMMUTABLE, value in seconds. The default value is *7200*. Please check detail at[deep-dive-real-time-olap](http://kylin.apache.org/blog/2019/07/01/deep-dive-real-time-olap/).
+- `kylin.stream.cube.duration.max`: specifies the maximum duration that segment can keep active, value in seconds. The default value is *43200*. Please check detail at[deep-dive-real-time-olap](http://kylin.apache.org/blog/2019/07/01/deep-dive-real-time-olap/).
+- `kylin.stream.checkpoint.file.max.num`: specifies the maximum number of checkpoint file for each cube. The default value is *5*.
+- `kylin.stream.index.checkpoint.intervals`: specifies the time interval between setting two checkpoints. The default value is *300*.
+- `kylin.stream.immutable.segments.max.num`: specifies the maximum number of the IMMUTABLE segment in each Cube of the current streaming receiver, if exceed, consumption of current topic will be paused. The default value is *100*.
+- `kylin.stream.consume.offsets.latest`: whether to consume from the latest offset or the earliest offset. The default value is *true*.
+
+#### Advanced config
+
+- `kylin.stream.assigner`: specifies the implementation class which used to assign the topic partition to different replica sets. The class should be the implementation class of `org.apache.kylin.stream.coordinator.assign.Assigner`. The default value is *DefaultAssigner*.
+- `kylin.stream.coordinator.client.timeout.millsecond`: specifies the connection timeout of the coordinator client. The default value is *5000*.
+- `kylin.stream.receiver.client.timeout.millsecond`: specifies the connection timeout of the receiver client. The default value is *5000*.
+- `kylin.stream.receiver.http.max.threads`: specifies the maximum connection threads of the receiver. The default value is *200*.
+- `kylin.stream.receiver.http.min.threads`: specifies the minimum connection threads of the receiver. The default value is *10*.
+- `kylin.stream.receiver.query-core-threads`: specifies the number of query threads be used for the current streaming receiver. The default value is *50*.
+- `kylin.stream.receiver.query-max-threads`: specifies the maximum number of query threads be used for the current streaming receiver. The default value is *200*.
+- `kylin.stream.segment-max-fragments`: specifies the maximum number of fragments that each segment keep. The default value is *50*.
+- `kylin.stream.segment-min-fragments`: specifies the minimum number of fragments that each segment keep. The default value is *15*.
+- `kylin.stream.max-fragment-size-mb`: specifies the maximum size of each fragment. The default value is *300*.
+- `kylin.stream.fragments-auto-merge-enable`: whether to enable fragments auto merge in streaming receiver side. The default value is *true*.
+- `kylin.stream.metrics.option`: specifies how to report metrics in streaming receiver side, option value are csv/console/jmx.
+- `kylin.stream.event.timezone`: specifies which timezone should derived time column like `HOUR_START`/`DAY_START` used.
+- `kylin.stream.auto-resubmit-after-discard-enabled`: whether to resubmit new building job automatically when finding previous job be discarded by user.
+
+> Note: For step by step tutorial, please refer to the [Real-time OLAP](/docs/tutorial/realtime_olap.html).
+
+### Storage Clean up Configuration    {#storage-clean-up-configuration}
+
+This section introduces Kylin storage clean up related configuration.
+
+
+
+### Storage-clean-up-related {#storage-clean-up-config}
+
+- `kylin.storage.clean-after-delete-operation`: whether to clean segment data in HBase and HDFS. The default value is FALSE.
 
 
 
@@ -619,6 +720,7 @@ The value of `kylin.query.timeout-seconds` is greater than 60 or equals 0, the m
 
 - `kylin.query.force-limit`: this parameter achieves the purpose of shortening the query duration by forcing a LIMIT clause for the select * statement. The default value is *-1*, and the parameter value is set to a positive integer, such as 1000, the value will be applied to the LIMIT clause, and the query will eventually be converted to select * from fact_table limit 1000
 - `kylin.storage.limit-push-down-enabled`: the default value is *TRUE*, set to *FALSE* to close the limit-pushdown of storage layer
+- `kylin.query.flat-filter-max-children`: specifies the maximum number of filters when flatting filter. The default value is 500000
 
 
 
