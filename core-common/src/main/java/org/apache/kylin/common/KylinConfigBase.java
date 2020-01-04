@@ -105,6 +105,22 @@ public abstract class KylinConfigBase implements Serializable {
         return getKylinHome() + File.separator + "spark";
     }
 
+    public static String getFlinkHome() {
+        String flinkHome = System.getenv("FLINK_HOME");
+        if (StringUtils.isNotEmpty(flinkHome)) {
+            logger.info("FLINK_HOME was set to {}", flinkHome);
+            return flinkHome;
+        }
+
+        flinkHome = System.getProperty("FLINK_HOME");
+        if (StringUtils.isNotEmpty(flinkHome)) {
+            logger.info("FLINK_HOME was set to {}", flinkHome);
+            return flinkHome;
+        }
+
+        return getKylinHome() + File.separator + "flink";
+    }
+
     public static String getTempDir() {
         return System.getProperty("java.io.tmpdir");
     }
@@ -715,6 +731,36 @@ public abstract class KylinConfigBase implements Serializable {
         return Integer.parseInt(getOptional("kylin.cube.cubeplanner.algorithm-threshold-genetic", "23"));
     }
 
+    /**
+     * get assigned server array, which a empty string array in default
+     * @return
+     */
+    public String[] getAssignedServers() {
+        return getOptionalStringArray("kylin.cube.schedule.assigned-servers", new String[] {});
+    }
+
+    /**
+     * Determine if the target node is in the assigned node
+     * @param targetServers target task servers
+     * @return
+     */
+    public boolean isOnAssignedServer(String... targetServers) {
+
+        String[] servers = this.getAssignedServers();
+        if (null == servers || servers.length == 0) {
+            return true;
+        }
+
+        for (String s : servers) {
+            for (String ts : targetServers) {
+                if (s.equalsIgnoreCase(ts)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     // ============================================================================
     // JOB
     // ============================================================================
@@ -911,12 +957,16 @@ public abstract class KylinConfigBase implements Serializable {
         return r;
     }
 
+    /**
+     * whether to enable quote identifier in create flat table in Kylin, how to quote is chosen by
+     * @see KylinConfigBase#getFactTableDialect
+     */
     public boolean enableHiveDdlQuote() {
         return Boolean.parseBoolean(getOptional("kylin.source.hive.quote-enabled", TRUE));
     }
 
-    public String getQuoteCharacter() {
-        return getOptional("kylin.source.quote.character", "`");
+    public String getFactTableDialect() {
+        return getOptional("kylin.fact.table.dialect", "hive");
     }
 
     /**
@@ -1319,6 +1369,8 @@ public abstract class KylinConfigBase implements Serializable {
         r.put(0, "org.apache.kylin.engine.mr.MRBatchCubingEngine"); //IEngineAware.ID_MR_V1
         r.put(2, "org.apache.kylin.engine.mr.MRBatchCubingEngine2"); //IEngineAware.ID_MR_V2
         r.put(4, "org.apache.kylin.engine.spark.SparkBatchCubingEngine2"); //IEngineAware.ID_SPARK
+        r.put(5, "org.apache.kylin.engine.flink.FlinkBatchCubingEngine2"); //IEngineAware.ID_FLINK
+
         r.putAll(convertKeyToInteger(getPropertiesByPrefix("kylin.engine.provider.")));
         return r;
     }
@@ -1369,8 +1421,16 @@ public abstract class KylinConfigBase implements Serializable {
         return getPropertiesByPrefix("kylin.engine.spark-conf.");
     }
 
+    public Map<String, String> getFlinkConfigOverride() {
+        return getPropertiesByPrefix("kylin.engine.flink-conf.");
+    }
+
     public Map<String, String> getSparkConfigOverrideWithSpecificName(String configName) {
         return getPropertiesByPrefix("kylin.engine.spark-conf-" + configName + ".");
+    }
+
+    public Map<String, String> getFlinkConfigOverrideWithSpecificName(String configName) {
+        return getPropertiesByPrefix("kylin.engine.flink-conf-" + configName + ".");
     }
 
     public double getDefaultHadoopJobReducerInputMB() {
@@ -1456,15 +1516,31 @@ public abstract class KylinConfigBase implements Serializable {
         return getOptional("kylin.engine.spark.additional-jars", "");
     }
 
+    public String getFlinkAdditionalJars() {
+        return getOptional("kylin.engine.flink.additional-jars", "");
+    }
+
     public float getSparkRDDPartitionCutMB() {
         return Float.parseFloat(getOptional("kylin.engine.spark.rdd-partition-cut-mb", "10.0"));
+    }
+
+    public float getFlinkPartitionCutMB() {
+        return Float.parseFloat(getOptional("kylin.engine.flink.partition-cut-mb", "10.0"));
     }
 
     public int getSparkMinPartition() {
         return Integer.parseInt(getOptional("kylin.engine.spark.min-partition", "1"));
     }
 
+    public int getFlinkMinPartition() {
+        return Integer.parseInt(getOptional("kylin.engine.flink.min-partition", "1"));
+    }
+
     public int getSparkMaxPartition() {
+        return Integer.parseInt(getOptional("kylin.engine.spark.max-partition", "5000"));
+    }
+
+    public int getFlinkMaxPartition() {
         return Integer.parseInt(getOptional("kylin.engine.spark.max-partition", "5000"));
     }
 
@@ -1477,10 +1553,14 @@ public abstract class KylinConfigBase implements Serializable {
     }
 
     public boolean isSparkFactDistinctEnable() {
-        return Boolean.parseBoolean(getOptional("kylin.engine.spark-fact-distinct", "false"));
+        return Boolean.parseBoolean(getOptional("kylin.engine.spark-fact-distinct", "true"));
     }
 
-    public boolean isSparkCardinalityEnabled(){
+    public boolean isSparkUHCDictionaryEnable() {
+        return Boolean.parseBoolean(getOptional("kylin.engine.spark-udc-dictionary", "false"));
+    }
+
+    public boolean isSparkCardinalityEnabled() {
         return Boolean.parseBoolean(getOptional("kylin.engine.spark-cardinality", "false"));
     }
 
@@ -1492,6 +1572,9 @@ public abstract class KylinConfigBase implements Serializable {
         return Boolean.parseBoolean(getOptional("kylin.engine.spark-dimension-dictionary", "false"));
     }
 
+    public boolean isFlinkSanityCheckEnabled() {
+        return Boolean.parseBoolean(getOptional("kylin.engine.flink.sanity-check-enabled", FALSE));
+    }
 
     // ============================================================================
     // ENGINE.LIVY
@@ -1765,7 +1848,8 @@ public abstract class KylinConfigBase implements Serializable {
     }
 
     public boolean isPushDownEnabled() {
-        return StringUtils.isNotEmpty(getPushDownRunnerClassName());
+        return Boolean.parseBoolean(this.getOptional("kylin.query.pushdown.enabled", FALSE))
+               || StringUtils.isNotEmpty(getPushDownRunnerClassName());
     }
 
     public boolean isPushDownUpdateEnabled() {
@@ -1780,6 +1864,17 @@ public abstract class KylinConfigBase implements Serializable {
         return getOptional("kylin.query.pushdown.runner-class-name", "");
     }
 
+    public List<String> getPushDownRunnerIds() {
+        List<String> ids = Lists.newArrayList();
+        String idsStr = getOptional("kylin.query.pushdown.runner.ids", "");
+        if (StringUtils.isNotEmpty(idsStr)) {
+            for (String id: idsStr.split(",")) {
+                ids.add(id);
+            }
+        }
+        return ids;
+    }
+
     public String[] getPushDownConverterClassNames() {
         return getOptionalStringArray("kylin.query.pushdown.converter-class-names",
                 new String[] { "org.apache.kylin.source.adhocquery.HivePushDownConverter" });
@@ -1789,32 +1884,72 @@ public abstract class KylinConfigBase implements Serializable {
         return Boolean.parseBoolean(this.getOptional("kylin.query.pushdown.cache-enabled", FALSE));
     }
 
-    public String getJdbcUrl() {
-        return getOptional("kylin.query.pushdown.jdbc.url", "");
+    public String getJdbcUrl(String id) {
+        if (null == id) {
+            return getOptional("kylin.query.pushdown.jdbc.url", "");
+        } else {
+            return getOptional("kylin.query.pushdown." + id + ".jdbc.url", "");
+        }
     }
 
-    public String getJdbcDriverClass() {
-        return getOptional("kylin.query.pushdown.jdbc.driver", "");
+    public String getJdbcDriverClass(String id) {
+        if (null == id) {
+            return getOptional("kylin.query.pushdown.jdbc.driver", "");
+        } else {
+            return getOptional("kylin.query.pushdown." + id + ".jdbc.driver", "");
+        }
     }
 
-    public String getJdbcUsername() {
-        return getOptional("kylin.query.pushdown.jdbc.username", "");
+    public String getJdbcUsername(String id) {
+        if (null == id) {
+            return getOptional("kylin.query.pushdown.jdbc.username", "");
+        } else {
+            return getOptional("kylin.query.pushdown." + id + ".jdbc.username", "");
+        }
     }
 
-    public String getJdbcPassword() {
-        return getOptional("kylin.query.pushdown.jdbc.password", "");
+    public String getJdbcPassword(String id) {
+        if (null == id) {
+            return getOptional("kylin.query.pushdown.jdbc.password", "");
+        } else {
+            return getOptional("kylin.query.pushdown." + id + ".jdbc.password", "");
+        }
     }
 
-    public int getPoolMaxTotal() {
-        return Integer.parseInt(this.getOptional("kylin.query.pushdown.jdbc.pool-max-total", "8"));
+    public int getPoolMaxTotal(String id) {
+        if (null == id) {
+            return Integer.parseInt(
+                    this.getOptional("kylin.query.pushdown.jdbc.pool-max-total", "8")
+            );
+        } else {
+            return Integer.parseInt(
+                    this.getOptional("kylin.query.pushdown." + id + ".jdbc.pool-max-total", "8")
+            );
+        }
     }
 
-    public int getPoolMaxIdle() {
-        return Integer.parseInt(this.getOptional("kylin.query.pushdown.jdbc.pool-max-idle", "8"));
+    public int getPoolMaxIdle(String id) {
+        if (null == id) {
+            return Integer.parseInt(
+                    this.getOptional("kylin.query.pushdown.jdbc.pool-max-idle", "8")
+            );
+        } else {
+            return Integer.parseInt(
+                    this.getOptional("kylin.query.pushdown." + id + ".jdbc.pool-max-idle", "8")
+            );
+        }
     }
 
-    public int getPoolMinIdle() {
-        return Integer.parseInt(this.getOptional("kylin.query.pushdown.jdbc.pool-min-idle", "0"));
+    public int getPoolMinIdle(String id) {
+        if (null == id) {
+            return Integer.parseInt(
+                    this.getOptional("kylin.query.pushdown.jdbc.pool-min-idle", "0")
+            );
+        } else {
+            return Integer.parseInt(
+                    this.getOptional("kylin.query.pushdown." + id + ".jdbc.pool-min-idle", "0")
+            );
+        }
     }
 
     public boolean isTableACLEnabled() {
@@ -1919,6 +2054,10 @@ public abstract class KylinConfigBase implements Serializable {
         return getOptional("kylin.security.acl.admin-role", "");
     }
 
+    public boolean createAdminWhenAbsent() {
+        return Boolean.parseBoolean(getOptional("kylin.security.create-admin-when-absent", FALSE));
+    }
+
     // ============================================================================
     // WEB
     // ============================================================================
@@ -1954,7 +2093,7 @@ public abstract class KylinConfigBase implements Serializable {
                 + "kylin.web.contact-mail,kylin.web.help.length,kylin.web.help.0,kylin.web.help.1,kylin.web.help.2,"
                 + "kylin.web.help.3,"
                 + "kylin.web.help,kylin.web.hide-measures,kylin.web.link-streaming-guide,kylin.server.external-acl-provider,"
-                + "kylin.security.profile,"
+                + "kylin.security.profile,kylin.security.additional-profiles,"
                 + "kylin.htrace.show-gui-trace-toggle,kylin.web.export-allow-admin,kylin.web.export-allow-other,"
                 + "kylin.cube.cubeplanner.enabled,kylin.web.dashboard-enabled,kylin.tool.auto-migrate-cube.enabled,"
                 + "kylin.job.scheduler.default,kylin.web.default-time-filter");
@@ -2287,6 +2426,10 @@ public abstract class KylinConfigBase implements Serializable {
 
     public boolean isAutoResubmitDiscardJob(){
         return Boolean.parseBoolean(getOptional("kylin.stream.auto-resubmit-after-discard-enabled", "true"));
+    }
+
+    public String getHiveDatabaseLambdaCube() {
+        return this.getOptional("kylin.stream.hive.database-for-lambda-cube", DEFAULT);
     }
 
     // ============================================================================
