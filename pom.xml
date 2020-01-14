@@ -123,6 +123,7 @@
     <mockito.version>2.7.14</mockito.version>
     <mockito-all.version>1.9.5</mockito-all.version>
     <powermock.version>1.7.0</powermock.version>
+    <guava-testlib.version>28.2-jre</guava-testlib.version>
 
     <!-- Commons -->
     <commons-lang3.version>3.4</commons-lang3.version>
@@ -1080,7 +1081,7 @@
     <repository>
       <id>central</id>
       <name>Central Repository</name>
-      <url>http://repo.maven.apache.org/maven2</url>
+      <url>https://repo.maven.apache.org/maven2</url>
       <layout>default</layout>
       <snapshots>
         <enabled>false</enabled>
@@ -1089,7 +1090,7 @@
 
     <repository>
       <id>conjars</id>
-      <url>http://conjars.org/repo/</url>
+      <url>https://conjars.org/repo/</url>
     </repository>
 
     <repository>
@@ -1105,7 +1106,7 @@
     <repository>
       <id>kyligence</id>
       <name>Kyligence Repository</name>
-      <url>http://repository.kyligence.io:8081/repository/maven-public/
+      <url>https://repository.kyligence.io:8443/repository/maven-public/
       </url>
       <releases>
         <enabled>true</enabled>
