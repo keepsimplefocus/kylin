@@ -31,7 +31,7 @@
   <groupId>org.apache.kylin</groupId>
   <artifactId>kylin</artifactId>
   <packaging>pom</packaging>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.1.0-SNAPSHOT</version>
 
   <name>Apache Kylin</name>
   <url>http://kylin.apache.org</url>
@@ -1106,7 +1106,7 @@
     <repository>
       <id>kyligence</id>
       <name>Kyligence Repository</name>
-      <url>https://repository.kyligence.io:8443/repository/maven-public/
+      <url>https://repository.kyligence.io/repository/maven-public/
       </url>
       <releases>
         <enabled>true</enabled>
